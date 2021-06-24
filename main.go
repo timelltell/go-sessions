@@ -4,9 +4,33 @@ import (
 	"fmt"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
+	"github.com/tedcy/fdfs_client"
+	"path"
+
 	//"github.com/gin-contrib/sessions/redis"
 	"github.com/gin-gonic/gin"
 )
+func SingleFileUpload(c *gin.Context){
+	form,_:=c.FormFile("avatar")
+	c.SaveUploadedFile(form,"./"+form.Filename)
+}
+func Fastdfs(c *gin.Context){
+	file,_:=c.FormFile("timell")
+	clt,err:=fdfs_client.NewClientWithConfig("./client.conf")
+	if err!=nil{
+		fmt.Println("   xxx   ")
+	}
+	//按文件名上传
+	resp,err:=clt.UploadByFilename("client.conf")
+	fmt.Println("resp: ",resp)
+
+	//按字节上传
+	f,_:=file.Open()
+	buf := make([]byte,file.Size)
+	f.Read(buf)
+	certificate,_:=clt.UploadByBuffer(buf,path.Ext(file.Filename))
+	fmt.Println("certificate: ",certificate)
+}
 func MyMiddleware1(ctx *gin.Context){
 	fmt.Println("I am MyMiddleware1")
 	ctx.Next()
